@@ -1,0 +1,11 @@
+# This is currently only useful for my non-gcp test build
+services:
+  web:
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS
+      - TARGET_URL=$TARGET_SERVICE_URL
+    build:
+      context: app
+      target: builder
+    ports:
+      - '8888:8888'
