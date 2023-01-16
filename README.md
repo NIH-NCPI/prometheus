@@ -8,10 +8,10 @@ When working to get the google stuff working, it became clear that none of the g
 
 ## Application Notes
 ### GET Only
-At the time of writing this (very early stages), the application ignores anything other than GET. 
+At the time of writing this (very early stages), the application ignores anything other than GET. While this is all we care to provide functionality for, we may want to provide reasonable responses for any other types of connectivity. 
 
 ### Service Account
-Each GAE project gets it's own service account, which is the default. This is currently set up to use that default service account. It can be modified later on if need be. 
+Each GAE project gets it's own service account which is referred to as the default. This application is currently set up to use that default service account. It can be modified later on if need be. 
 
 In order to permit access to the FHIR server via this particular account, it had to be added to the service's permissions. 
 
