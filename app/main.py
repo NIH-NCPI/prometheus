@@ -10,26 +10,11 @@ import requests
 import os
 
 
-METADATA_URL = 'http://metadata.google.internal/computeMetadata/v1/'
-METADATA_HEADERS = {'Metadata-Flavor': 'Google'}
-SERVICE_ACCOUNT = 'default'
 
 FHIR_VERSION = "4.0.1"
 
 app = Flask(__name__)
-
-def get_access_token():
-    url = '{}instance/service-accounts/{}/token'.format(
-        METADATA_URL, SERVICE_ACCOUNT)
-
-    # Request an access token from the metadata server.
-    r = requests.get(url, headers=METADATA_HEADERS)
-    r.raise_for_status()
-
-    # Extract the access token from the response.
-    access_token = r.json()['access_token']
-    return access_token
-
+_auth = None
 
 @app.route("/", methods=['GET'])
 def root():
@@ -48,20 +33,22 @@ def root():
 <p>- J. Hendrix"""
 
 @app.route('/<path:path>', methods=['GET'])
-def reversable(path):
+def reversible(path):
 
     if flask.request.method=='GET':
+        auth = get_auth()
         fhir_url=os.getenv('TARGET_SERVICE_URL')
-        access_token = get_access_token()
 
         major_version = FHIR_VERSION.split(".")[0]
         headers = {
-            'Authorization': 'Bearer {}'.format(access_token),
             "Content-Type": f"application/fhir+json; fhirVersion={major_version}.0"
         }
+        auth.authorize(headers)
 
         url = f"{fhir_url}/{path}"
         print(url)
+
+
         resp = requests.get(url, headers=headers)
         excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
         headers = [(name, value) for (name, value) in     resp.raw.headers.items() if name.lower() not in excluded_headers]
@@ -71,6 +58,16 @@ def reversable(path):
 
     else:
         return "GET is the only verb permitted with this service."
+
+def get_auth():
+    global _auth 
+
+    if _auth is None:
+        # Eventually, we may want to work a way to determine auth methods via the
+        # yaml configuration
+        from auth.google_service_account import Auth
+        _auth = Auth()
+    return _auth
 
 if __name__ == "__main__":
     app.run(debug=True)
