@@ -1,0 +1,18 @@
+
+runtime: python39
+#env: flex
+
+# You CAN configure this even in standard environment. Presumably
+# by default, it is what you see below
+#entrypoint: gunicorn -b :$PORT main:app
+
+#runtime_config:
+#  python_version: 3
+
+handlers:
+- url: /.*
+  # secure: always  # Requires https
+  script: auto
+
+env_variables:
+  TARGET_SERVICE_URL: "https://healthcare.googleapis.com/v1/projects/anvil-fhir-vumc/locations/us/datasets/anvil-research-studies/fhirStores/research-study/fhir"
