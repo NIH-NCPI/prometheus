@@ -11,7 +11,7 @@ runtime: python39
 
 handlers:
 - url: /.*
-  # secure: always  # Requires https
+  secure: always  # Requires https
   script: auto
 
 env_variables:
