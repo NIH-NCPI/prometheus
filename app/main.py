@@ -9,12 +9,24 @@ from google.oauth2 import service_account
 import requests
 import os
 
-
-
+_PROXY_PATH=None
+FHIR_URL=os.getenv('TARGET_SERVICE_URL')
 FHIR_VERSION = "4.0.1"
 
 app = Flask(__name__)
 _auth = None
+
+
+def get_proxy_path(flask_request):
+    """We'll use this for substituting url info passed to and from the FHIR """
+    """server to allow clients to correctly interact with the server"""
+
+    global _PROXY_PATH
+
+    if _PROXY_PATH is None:
+        base_url =  flask_request.base_url
+        _PROXY_PATH=base_url[0:base_url.index("/", 10)]
+    return _PROXY_PATH
 
 @app.route("/", methods=['GET'])
 def root():
@@ -34,10 +46,9 @@ def root():
 
 @app.route('/<path:path>', methods=['GET'])
 def reversible(path):
-
+    global FHIR_URL
     if flask.request.method=='GET':
         auth = get_auth()
-        fhir_url=os.getenv('TARGET_SERVICE_URL')
 
         major_version = FHIR_VERSION.split(".")[0]
         headers = {
@@ -45,14 +56,20 @@ def reversible(path):
         }
         auth.authorize(headers)
 
-        url = f"{fhir_url}/{path}"
-        print(url)
+        proxy_path = get_proxy_path(flask.request)
+        original_url = flask.request.base_url
+        backend_path = path.replace(proxy_path, FHIR_URL)
+        url = f"{FHIR_URL}/{backend_path}"
+        print(f"""Incoming url: {original_url}
+target_url: {url}
+proxy_path: {proxy_path}""")
 
 
         resp = requests.get(url, headers=headers)
         excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
-        headers = [(name, value) for (name, value) in     resp.raw.headers.items() if name.lower() not in excluded_headers]
-        response = flask.Response(resp.content, resp.status_code, headers)
+        headers = [(name, value) for (name, value) in resp.raw.headers.items() if name.lower() not in excluded_headers]
+        #print(f"The response content is: \n{resp.content}")
+        response = flask.Response(resp.content.replace(bytes(FHIR_URL, 'utf8'), bytes(proxy_path, 'utf8')), resp.status_code, headers)
 
         return response
 
