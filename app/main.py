@@ -33,16 +33,27 @@ def root():
     return f"""<p>The FHIR path is: <strong>{os.getenv("TARGET_SERVICE_URL", "??")} </strong>
 
 <p>This is the root path for the FHIR server which doesn't do much. You should provide a meaningful FHIR query. 
+<p>Some example queries include: 
+<p><a href=https://nih-ncpi.github.io/ncpi-fhir-ig/>NCPI FHIR IG</a>
+<p><a href=fhir/CodeSystem>IG CodeSystems Loaded</a>
+<p><a href=fhir/ValueSet>IG ValueSets Loaded</a>
+<p><a href=fhir/StructureDefinition>IG Profiles Loaded</a>
+<p><a href=fhir/ResearchStudy>Research Studies Loaded</a>
 
-<p>You don't care for me
-<p>I don't care about that
-<p>Gotta new fool
-<p>I like it like that
 <p>
-<p>I have only one burnin' desire
-<p>Let me stand next to your FHIR
+<hr>
+<pre>
 
-<p>- J. Hendrix"""
+You don't care for me
+I don't care about that
+Gotta new fool
+I like it like that
+
+I have only one burnin' desire
+Let me stand next to your FHIR
+
+- J. Hendrix
+</pre>"""
 
 @app.route('/fhir/<path:path>', methods=['GET'])
 def reversible(path):
