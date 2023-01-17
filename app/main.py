@@ -44,7 +44,7 @@ def root():
 
 <p>- J. Hendrix"""
 
-@app.route('/<path:path>', methods=['GET'])
+@app.route('/fhir/<path:path>', methods=['GET'])
 def reversible(path):
     global FHIR_URL
     if flask.request.method=='GET':
