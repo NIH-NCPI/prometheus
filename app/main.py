@@ -25,7 +25,7 @@ def get_proxy_path(flask_request):
 
     if _PROXY_PATH is None:
         base_url =  flask_request.base_url
-        _PROXY_PATH=base_url[0:base_url.index("/", 10)]
+        _PROXY_PATH=base_url[0:base_url.index("/", 10)] + "/fhir"
     return _PROXY_PATH
 
 @app.route("/", methods=['GET'])
@@ -55,11 +55,23 @@ Let me stand next to your FHIR
 - J. Hendrix
 </pre>"""
 
-@app.route('/fhir/<path:path>', methods=['GET'])
-def reversible(path):
+@app.route('/fhir/<path:resource>', methods=['GET'])
+def reversible(resource):
     global FHIR_URL
+
     if flask.request.method=='GET':
         auth = get_auth()
+
+        query = []
+        # Build the full query using whatever args were provided
+        for arg,val in flask.request.args.items():
+            query.append(f"{arg}={val}")
+        if len(query) > 0:
+            query = "?" + "&".join(query)
+        else:
+            query = ""
+        fhir_query = f"{resource}{query}"
+        print(f"RESOURCE: {resource}\nFHIR QRY: {fhir_query}")
 
         major_version = FHIR_VERSION.split(".")[0]
         headers = {
@@ -69,11 +81,15 @@ def reversible(path):
 
         proxy_path = get_proxy_path(flask.request)
         original_url = flask.request.base_url
-        backend_path = path.replace(proxy_path, FHIR_URL)
+        backend_path = fhir_query.replace(proxy_path, FHIR_URL)
         url = f"{FHIR_URL}/{backend_path}"
-        print(f"""Incoming url: {original_url}
+        print(f"""FHIR_URL: {FHIR_URL}
+Incoming url: {original_url}
 target_url: {url}
-proxy_path: {proxy_path}""")
+proxy_path: {proxy_path}
+backend_path: {backend_path}
+
+final_url: {url}""")
 
 
         resp = requests.get(url, headers=headers)
