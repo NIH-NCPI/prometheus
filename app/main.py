@@ -93,8 +93,15 @@ final_url: {url}""")
 
 
         resp = requests.get(url, headers=headers)
-        excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
-        headers = [(name, value) for (name, value) in resp.raw.headers.items() if name.lower() not in excluded_headers]
+        excluded_headers = ['content-encoding', 
+                            'content-length', 
+                            'transfer-encoding', 
+                            'connection']
+
+        # Add in a header to prevent CORS issues
+        headers = [(name, value) for (name, value) in resp.raw.headers.items() if name.lower() not in excluded_headers] + \
+                [("Access-Control-Allow-Origin", "*")]
+
         #print(f"The response content is: \n{resp.content}")
         response = flask.Response(resp.content.replace(bytes(FHIR_URL, 'utf8'), bytes(proxy_path, 'utf8')), resp.status_code, headers)
 
