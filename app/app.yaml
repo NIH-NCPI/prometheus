@@ -14,5 +14,11 @@ handlers:
   secure: always  # Requires https
   script: auto
 
+# There is concern about something triggering huge increase in instances 
+# resulting in high bills. This may require some reconsideration if people 
+# really begin using the service. 
+basic_scaling:
+  max_instances: 2
+
 env_variables:
   TARGET_SERVICE_URL: "https://healthcare.googleapis.com/v1/projects/anvil-fhir-vumc/locations/us/datasets/anvil-research-studies/fhirStores/research-study/fhir"
